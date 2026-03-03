@@ -1,0 +1,5 @@
+{
+  "name": "숫자 맞추기 게임",
+  "description": "0부터 1000까지의 숫자를 맞추는 게임입니다.",
+  "requestFramePermissions": []
+}
