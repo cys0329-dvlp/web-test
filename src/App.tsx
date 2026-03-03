@@ -15,6 +15,7 @@ export default function App() {
   const [history, setHistory] = useState<GuessHistory[]>([]);
   const [status, setStatus] = useState<'playing' | 'won'>('playing');
   const [error, setError] = useState<string>('');
+  const [shake, setShake] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -57,6 +58,8 @@ export default function App() {
     setGuess('');
     
     if (result !== 'correct') {
+      setShake(true);
+      setTimeout(() => setShake(false), 400);
       inputRef.current?.focus();
     }
   };
@@ -64,8 +67,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-stone-100 flex items-center justify-center p-4 font-sans text-stone-900">
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={{ opacity: 0, y: 50, scale: 0.9 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ type: "spring", bounce: 0.5, duration: 0.8 }}
         className="bg-white rounded-3xl shadow-xl w-full max-w-md overflow-hidden border border-stone-200"
       >
         {/* Header */}
@@ -80,29 +84,36 @@ export default function App() {
             {status === 'won' ? (
               <motion.div
                 key="won"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
+                initial={{ scale: 0, rotate: -180, opacity: 0 }}
+                animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 260, damping: 20 }}
                 className="text-center py-8"
               >
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full mb-4">
+                <motion.div 
+                  animate={{ rotate: [0, -10, 10, -10, 10, 0], scale: [1, 1.1, 1] }}
+                  transition={{ duration: 1.5, repeat: Infinity, repeatDelay: 0.5 }}
+                  className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full mb-4"
+                >
                   <Trophy size={40} />
-                </div>
+                </motion.div>
                 <h2 className="text-3xl font-bold text-emerald-600 mb-2">정답입니다!</h2>
                 <p className="text-stone-600 mb-6">
                   <span className="font-bold text-stone-900">{history.length}</span>번 만에 맞추셨습니다. (정답: {target})
                 </p>
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={startNewGame}
                   className="w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <RotateCcw size={20} />
                   다시 하기
-                </button>
+                </motion.button>
               </motion.div>
             ) : (
               <motion.div key="playing" className="py-2">
                 <form onSubmit={handleGuess} className="space-y-4">
-                  <div>
+                  <motion.div animate={shake ? { x: [-10, 10, -10, 10, 0] } : {}} transition={{ duration: 0.4 }}>
                     <input
                       ref={inputRef}
                       type="number"
@@ -117,14 +128,16 @@ export default function App() {
                     {error && (
                       <p className="text-red-500 text-sm text-center mt-2 font-medium">{error}</p>
                     )}
-                  </div>
-                  <button
+                  </motion.div>
+                  <motion.button
+                    whileHover={{ scale: guess ? 1.02 : 1 }}
+                    whileTap={{ scale: guess ? 0.95 : 1 }}
                     type="submit"
                     disabled={!guess}
                     className="w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-stone-300 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-lg transition-colors shadow-sm"
                   >
                     확인
-                  </button>
+                  </motion.button>
                 </form>
               </motion.div>
             )}
@@ -144,8 +157,9 @@ export default function App() {
                   {history.map((h, i) => (
                     <motion.div
                       key={`${history.length - i}`}
-                      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
-                      animate={{ opacity: 1, height: 'auto', marginBottom: 8 }}
+                      initial={{ opacity: 0, x: -50, height: 0, marginBottom: 0 }}
+                      animate={{ opacity: 1, x: 0, height: 'auto', marginBottom: 8 }}
+                      transition={{ type: "spring", bounce: 0.5 }}
                       className={`flex items-center justify-between p-4 rounded-xl border ${
                         h.result === 'correct' 
                           ? 'bg-emerald-50 border-emerald-200 text-emerald-700' 
